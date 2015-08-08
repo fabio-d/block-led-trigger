@@ -1,0 +1,12 @@
+#!/bin/bash
+THIS_FOLDER="$(realpath "$(dirname "$0")")"
+
+MODNAME=block_led_trigger
+
+TEMPDIR="$(mktemp -d build-$MODNAME.XXXXXXXXXX --tmpdir)"
+trap "rm -rf '$TEMPDIR'" exit
+
+cp -v "$THIS_FOLDER"/{Makefile,block_led_trigger.c} $TEMPDIR/ && \
+	make -C "$TEMPDIR" && \
+	insmod "$TEMPDIR"/$MODNAME.ko invert-brightness=Y devices=sda,sdb && \
+	echo block-activity > "/sys/class/leds/tpacpi::power/trigger"

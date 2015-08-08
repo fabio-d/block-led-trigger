@@ -1,0 +1,12 @@
+[Unit]
+Description=HD (sda/sdb) Disk Activity LED Trigger
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/share/block-led-trigger/block-led-trigger
+ExecStop=/sbin/rmmod block_led_trigger
+ExecStopPost=/bin/sh -c 'echo 1 > /sys/class/leds/tpacpi::power/brightness'
+
+[Install]
+WantedBy=default.target
