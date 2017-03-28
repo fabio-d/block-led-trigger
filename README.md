@@ -1,20 +1,16 @@
 # block-led-trigger
 Linux kernel module to blink LEDs on block device activity
 
-## Description
-My new ThinkPad W541 laptop has no hard disk activity LED, but just a single
-power LED that can thankfully be controlled in software (through Linux's LED
-infrastructure). I have been missing the HD LED since the moment I unboxed
-the laptop and, since the power LED's default always-on function is basically
-useless, I have decided to turn it into an hard disk activity LED.
+**Update**: Starting with version 4.8, Linux now has built-in support for
+blinking LEDs (through the `disk-activity` trigger). However Linux's built-in
+`disk-activity` trigger is not configurable, whereas this module enables the
+user to specify what disks to monitor and a few other parameters.
 
-Linux has a great LED infrastructure and the feature I wanted was already
-available for IDE disks (see Linux's `drivers/leds/trigger/ledtrig-ide-disk.c`).
-Unfortunately that code only works if you are using the old `ide` driver (that
-is, if your hard disk shows up as a `/dev/hdX` device). In virtually all modern
-distributions (including my Fedora 22) hard disks are now `/dev/sdX` because
-they are controlled by different drivers and, to my knowledge, there is no LED
-support in these drivers.
+## Description
+My ThinkPad laptop has no hard disk activity LED, but just a single power LED
+that can be controlled in software (through Linux's LED infrastructure). The
+power LED's default always-on function is basically useless, and I have decided
+to turn it into an hard disk activity LED.
 
 This repository contains a Linux kernel module that implements a
 `block-activity` LED trigger that can be assigned to LEDs as follows:
@@ -24,7 +20,7 @@ This repository contains a Linux kernel module that implements a
 ```
 
 ## Usage
-This module has only been tested on *Fedora 22 x86_64*, kernel version _4.1.3_.
+This module has been tested on *Fedora 25 x86_64*, kernel version _4.10.5_.
 
 After compiling the kernel module (with a simple in-source `make`), load it
 with:
@@ -61,14 +57,16 @@ which is exposed to userland programs through the _blktrace_ API.
 Unfortunately, it is not exposed to kernel modules (in particular, the
 `__tracepoint_block_rq_issue` variable is not exported and therefore it cannot
 be resolved by the module loader at runtime). For this reason, the Makefile
-contains a `grep` command to extract its address from the kernel memory map
-(_System.map_) and resolve its address at compile time.
+contains a `grep` command to extract its address from the running kernel's memory
+map (_/proc/kallsyms_) and resolve its address at compile time.
 
 The generated kernel module is therefore very dependent on the memory layout of
 the kernel it was compiled against. If you try to load the compiled module on a
 different kernel binary (even if it's the very same kernel version), the address
 of that variable will likely be different and the module will refuse to load.
 
+If the kernel was compiled with `CONFIG_RELOCATABLE`, it is even possible for the
+address to change across reboots with the same kernel binary.
 
 ## RPM package and systemd service
 The repository also contains a `make-rpm.sh` script that generates an RPM
@@ -92,5 +90,6 @@ To run the service automatically on boot:
 ```
 
 Note that the service script will rebuild the module on each boot. This
-operation takes very little time on my ThinkPad, but it could be probably
-be avoided by creating proper `akmods`/`dkms` packages.
+operation usually takes negligible time on a modern CPU, but it can be probably
+be avoided by creating proper `akmods`/`dkms` packages, provided
+`CONFIG_RELOCATABLE` does not interfere (see _Warnings_ above).
