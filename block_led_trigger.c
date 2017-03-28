@@ -61,7 +61,12 @@ static int __init symbol_callback(void *data, const char *name, struct module *m
 		__tracepoint_block_rq_issue_address_found = true;
 
 		if (addr != __tracepoint_block_rq_issue_address)
+		{
+			printk(KERN_ERR "block_led_trigger: __tracepoint_block_rq_issue: symbol address mismatch\n");
+			printk(KERN_ERR "block_led_trigger: expected: %p\n", &__tracepoint_block_rq_issue);
+			printk(KERN_ERR "block_led_trigger: actual: %p\n", (void*)addr);
 			__tracepoint_block_rq_issue_address_mismatch = true;
+		}
 	}
 
 	return 0;
@@ -91,7 +96,6 @@ static int __init block_led_trigger_init(void)
 
 	if (__tracepoint_block_rq_issue_address_mismatch)
 	{
-		printk(KERN_ERR "block_led_trigger: __tracepoint_block_rq_issue: symbol address mismatch\n");
 		printk(KERN_ERR "block_led_trigger: please recompile this module against the running kernel\n");
 		return -EFAULT;
 	}
