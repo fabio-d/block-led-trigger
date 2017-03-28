@@ -11,5 +11,10 @@ PWD   := $(shell pwd)
 EXTRA_CFLAGS += $(shell grep __tracepoint_block_rq_issue $(KDIR)/System.map | \
 	sed 's/\([^ ]*\).*/-D__tracepoint_block_rq_issue_address=0x\1/')
 
+.PHONY: default clean
+
 default:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
+
+clean:
+	$(MAKE) -C $(KDIR) M=$(PWD) clean
