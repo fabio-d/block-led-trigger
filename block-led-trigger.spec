@@ -1,5 +1,5 @@
 Name:		block-led-trigger
-Version:	0.1
+Version:	0.2
 Release:	1%{?dist}
 Summary:	Block device activity LED trigger
 License:	GPLv2
@@ -46,5 +46,8 @@ rm -rf %{buildroot}
 %{_unitdir}/block-led-trigger.service
 
 %changelog
+* Tue Mar 28 2017 Fabio D'Urso <fabiodurso@hotmail.com> 0.2-1
+- Search __tracepoint_block_rq_issue in /proc/kallsyms instead of System.map.
+
 * Wed Aug 5 2015 Fabio D'Urso <fabiodurso@hotmail.com> 0.1-1
 - Initial version.

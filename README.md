@@ -79,7 +79,7 @@ The RPM package can be installed and started as follows:
 
 ```
 $ ./make-rpm.sh
-# dnf install block-led-trigger-0.1-1.fc22.noarch.rpm
+# dnf install block-led-trigger-0.2-1.fc25.noarch.rpm
 # systemctl start block-led-trigger
 ```
 
