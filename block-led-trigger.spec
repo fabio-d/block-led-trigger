@@ -1,5 +1,5 @@
 Name:		block-led-trigger
-Version:	0.2
+Version:	0.3
 Release:	1%{?dist}
 Summary:	Block device activity LED trigger
 License:	GPLv2
@@ -46,6 +46,9 @@ rm -rf %{buildroot}
 %{_unitdir}/block-led-trigger.service
 
 %changelog
+* Wed Aug 23 2017 Fabio D'Urso <fabiodurso@hotmail.com> 0.3-1
+- Fix for Fedora 26.
+
 * Tue Mar 28 2017 Fabio D'Urso <fabiodurso@hotmail.com> 0.2-1
 - Search __tracepoint_block_rq_issue in /proc/kallsyms instead of System.map.
 

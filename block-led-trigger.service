@@ -9,4 +9,4 @@ ExecStop=/sbin/rmmod block_led_trigger
 ExecStopPost=/bin/sh -c 'echo 1 > /sys/class/leds/tpacpi::power/brightness'
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target
