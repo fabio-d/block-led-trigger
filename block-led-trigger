@@ -8,5 +8,5 @@ trap "rm -rf '$TEMPDIR'" exit
 
 cp -v "$THIS_FOLDER"/{Makefile,$MODNAME.c} $TEMPDIR/ && \
 	make -C "$TEMPDIR" && \
-	insmod "$TEMPDIR"/$MODNAME.ko invert-brightness=Y devices=sda,sdb && \
+	insmod "$TEMPDIR"/$MODNAME.ko invert-brightness=Y devices=8:0,8:16 && \
 	echo block-activity > "/sys/class/leds/tpacpi::power/trigger"

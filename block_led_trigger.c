@@ -18,20 +18,22 @@ module_param(blink_delay_ms, ulong, S_IRUGO | S_IWUSR);
 
 static unsigned int device_count = 1;
 static dev_t device_dev[MAX_DEVICES];
-static char *device_names[MAX_DEVICES] = { "sda" };
-module_param_array_named(devices, device_names, charp, &device_count, 0);
+static char *device_devstr[MAX_DEVICES] = { "8:0" };
+module_param_array_named(devices, device_devstr, charp, &device_count, 0);
 
 // Hack to gain access to the "block_rq_issue" tracepoint (see Makefile)
-static bool __tracepoint_block_rq_issue_address_found = false;
-static bool __tracepoint_block_rq_issue_address_mismatch = false;
 #ifdef __tracepoint_block_rq_issue_address
+# if __tracepoint_block_rq_issue_address != 0
 asm(".equ __tracepoint_block_rq_issue, " __stringify(__tracepoint_block_rq_issue_address));
+# else
+#  error __tracepoint_block_rq_issue address is zero (are you non-root?)
+# endif
 #else
-#error __tracepoint_block_rq_issue address could not be detected (see Makefile)
+# error __tracepoint_block_rq_issue address could not be detected (see Makefile)
 #endif
 
 // Tracepoint callback: called every time an I/O request is sent to a block device
-static void trace_rq_issue(void *ignore, struct request_queue *q, struct request *rq)
+static void trace_rq_issue(void *ignore, struct request *rq)
 {
 	bool device_matched = false;
 	int i;
@@ -54,22 +56,15 @@ static void trace_rq_issue(void *ignore, struct request_queue *q, struct request
 	led_trigger_blink_oneshot(ledtrig_block, &blink_delay_ms, &blink_delay_ms, invert_brightness);
 }
 
-static int __init symbol_callback(void *data, const char *name, struct module *mod, unsigned long addr)
+static bool __init validate_tracepoint_address(void)
 {
-	if (mod == NULL && strcmp(name, "__tracepoint_block_rq_issue") == 0)
-	{
-		__tracepoint_block_rq_issue_address_found = true;
+	static char expected[] = "__tracepoint_block_rq_issue+0x0/";
+	static char actual[sizeof(expected)];
 
-		if (addr != __tracepoint_block_rq_issue_address)
-		{
-			printk(KERN_ERR "block_led_trigger: __tracepoint_block_rq_issue: symbol address mismatch\n");
-			printk(KERN_ERR "block_led_trigger: expected: %p\n", &__tracepoint_block_rq_issue);
-			printk(KERN_ERR "block_led_trigger: actual: %p\n", (void*)addr);
-			__tracepoint_block_rq_issue_address_mismatch = true;
-		}
-	}
+	printk(KERN_INFO "block_led_trigger: hardcoded address %p resolves to %pS\n", &__tracepoint_block_rq_issue, &__tracepoint_block_rq_issue);
+	snprintf(actual, sizeof(actual), "%pS", &__tracepoint_block_rq_issue);
 
-	return 0;
+	return memcmp(actual, expected, sizeof(expected)) == 0;
 }
 
 static int __init block_led_trigger_init(void)
@@ -78,42 +73,25 @@ static int __init block_led_trigger_init(void)
 
 	printk(KERN_DEBUG "block_led_trigger: loading\n");
 
-	// Sanity check: verify that the hardcoded __tracepoint_block_rq_issue
-	// address is correct for the running kernel
-	ret = kallsyms_on_each_symbol(symbol_callback, NULL);
-	if (ret != 0)
-	{
-		printk(KERN_ERR "block_led_trigger: kallsyms_on_each_symbol failed, return code: %d\n",
-			ret);
-		return ret;
-	}
-
-	if (!__tracepoint_block_rq_issue_address_found)
-	{
-		printk(KERN_ERR "block_led_trigger: __tracepoint_block_rq_issue: symbol not found\n");
-		return -EFAULT;
-	}
-
-	if (__tracepoint_block_rq_issue_address_mismatch)
+	if (!validate_tracepoint_address())
 	{
 		printk(KERN_ERR "block_led_trigger: please recompile this module against the running kernel\n");
 		return -EFAULT;
 	}
 
-	// Translate device names (such as "sda") to device major/minor (such as 8:0)
+	// Parse device strings (such as "8:0") into device major/minor numbers
 	for (i = 0; i < device_count; i++)
 	{
-		device_dev[i] = blk_lookup_devt(device_names[i], 0);
-
-		if (!device_dev[i])
+		unsigned int major, minor;
+		int endpos;
+		if (sscanf(device_devstr[i], "%u:%u%n", &major, &minor, &endpos) != 2 || device_devstr[i][endpos] != '\0')
 		{
-			printk(KERN_ERR "block_led_trigger: %s cannot be resolved\n",
-				device_names[i]);
-			return -ENODEV;
+			printk(KERN_ERR "block_led_trigger: %s cannot be parsed as a device in MAJOR:MINOR format\n",
+				device_devstr[i]);
+			return -EINVAL;
 		}
 
-		printk(KERN_DEBUG "block_led_trigger: %s resolved to device %u:%u\n",
-		       device_names[i], MAJOR(device_dev[i]), MINOR(device_dev[i]));
+		device_dev[i] = MKDEV(major, minor);
 	}
 
 	// Initialize LED trigger

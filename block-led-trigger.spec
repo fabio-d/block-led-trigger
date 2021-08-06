@@ -1,5 +1,5 @@
 Name:		block-led-trigger
-Version:	0.3
+Version:	0.4
 Release:	1%{?dist}
 Summary:	Block device activity LED trigger
 License:	GPLv2
@@ -46,6 +46,9 @@ rm -rf %{buildroot}
 %{_unitdir}/block-led-trigger.service
 
 %changelog
+* Sat Aug 7 2021 Fabio D'Urso <fabiodurso@hotmail.com> 0.4-1
+- Make it work with newer kernels.
+
 * Wed Aug 23 2017 Fabio D'Urso <fabiodurso@hotmail.com> 0.3-1
 - Fix for Fedora 26.
 

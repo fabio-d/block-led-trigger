@@ -20,14 +20,18 @@ This repository contains a Linux kernel module that implements a
 ```
 
 ## Usage
-This module has been tested on *Fedora 25 x86_64*, kernel version _4.10.5_.
+This module has been tested on *Fedora 34 x86_64*, kernel version _5.13.6_.
 
-After compiling the kernel module (with a simple in-source `make`), load it
-with:
+Compile the kernel module (with a simple in-source `make`) **as root**, then
+load it with:
 
 ```
-# insmod block_led_trigger.ko devices=sda,sdb
+# insmod block_led_trigger.ko devices=8:0,8:16
 ```
+
+Note: This module has to be compiled as root because regular users cannot read
+the actual contents of _/proc/kallsyms_. See the _Warnings_ section for an
+explanation on why this file is needed at compile time.
 
 _(see the next paragraph for the available command-line arguments)_
 
@@ -43,8 +47,11 @@ Finally, assign the `block-activity` LED trigger with:
 ## Module parameters
 `blink_delay_ms` (default: _30_) is the blink interval in milliseconds.
 
-`devices` (default: _sda_) is a comma-separated list of devices to monitor. The
+`devices` (default: _8:0_) is a comma-separated list of devices to monitor. The
 LED will blink whenever one of those devices is servicing an I/O operation.
+Devices must be listed in `MAJOR:MINOR` format (e.g. _8:0_ for _sda_, _8:16_ for
+_sdb_, _8:32_ for _sdc_, _8:48_ for _sdd_, and so on - if unsure, run
+`ls -la /dev/sd?` to discover the values on your running system).
 
 `invert_brightness` (default: _N_) lets you invert the LED output state. If _N_
 is selected, the LED will stay switched off if there is no I/O activity; if _Y_
@@ -68,6 +75,10 @@ of that variable will likely be different and the module will refuse to load.
 If the kernel was compiled with `CONFIG_RELOCATABLE`, it is even possible for the
 address to change across reboots with the same kernel binary.
 
+Please note that all addresses in _/proc/kallsyms_ might [appear as zero to
+non-root users](https://stackoverflow.com/questions/55591542). Therefore, this
+module must be compiled as root.
+
 ## RPM package and systemd service
 The repository also contains a `make-rpm.sh` script that generates an RPM
 package containing a systemd service that:
@@ -78,8 +89,8 @@ package containing a systemd service that:
 The RPM package can be installed and started as follows:
 
 ```
-$ ./make-rpm.sh
-# dnf install block-led-trigger-0.3-1.fc26.noarch.rpm
+# ./make-rpm.sh
+# dnf install block-led-trigger-0.4-1.fc34.noarch.rpm
 # systemctl start block-led-trigger
 ```
 
