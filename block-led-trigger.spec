@@ -46,14 +46,14 @@ rm -rf %{buildroot}
 %{_unitdir}/block-led-trigger.service
 
 %changelog
-* Sat Aug 7 2021 Fabio D'Urso <fabiodurso@hotmail.com> 0.4-1
+* Sat Aug 7 2021 Fabio D'Urso <fabiodurso@hotmail.it> 0.4-1
 - Make it work with newer kernels.
 
-* Wed Aug 23 2017 Fabio D'Urso <fabiodurso@hotmail.com> 0.3-1
+* Wed Aug 23 2017 Fabio D'Urso <fabiodurso@hotmail.it> 0.3-1
 - Fix for Fedora 26.
 
-* Tue Mar 28 2017 Fabio D'Urso <fabiodurso@hotmail.com> 0.2-1
+* Tue Mar 28 2017 Fabio D'Urso <fabiodurso@hotmail.it> 0.2-1
 - Search __tracepoint_block_rq_issue in /proc/kallsyms instead of System.map.
 
-* Wed Aug 5 2015 Fabio D'Urso <fabiodurso@hotmail.com> 0.1-1
+* Wed Aug 5 2015 Fabio D'Urso <fabiodurso@hotmail.it> 0.1-1
 - Initial version.
