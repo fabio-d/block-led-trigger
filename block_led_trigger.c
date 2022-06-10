@@ -38,14 +38,14 @@ static void trace_rq_issue(void *ignore, struct request *rq)
 	bool device_matched = false;
 	int i;
 
-	// Sometimes we get null requests... :(
-	if (rq == NULL || rq->rq_disk == NULL)
+	// Do not attempt to dereference null requests
+	if (rq == NULL || rq->q == NULL || rq->q->disk == NULL)
 		return;
 
 	// Filter out requests to devices that are not listed in the "devices" parameter
 	for (i = 0; i < device_count && !device_matched; i++)
 	{
-		if (MKDEV(rq->rq_disk->major, rq->rq_disk->first_minor) == device_dev[i])
+		if (MKDEV(rq->q->disk->major, rq->q->disk->first_minor) == device_dev[i])
 			device_matched = true;
 	}
 
