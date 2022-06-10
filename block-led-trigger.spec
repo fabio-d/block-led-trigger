@@ -1,5 +1,5 @@
 Name:		block-led-trigger
-Version:	0.4
+Version:	0.5
 Release:	1%{?dist}
 Summary:	Block device activity LED trigger
 License:	GPLv2
@@ -46,6 +46,9 @@ rm -rf %{buildroot}
 %{_unitdir}/block-led-trigger.service
 
 %changelog
+* Fri Jun 10 2022 Fabio D'Urso <fabiodurso@hotmail.it> 0.5-1
+- Make it work with newer kernels.
+
 * Sat Aug 7 2021 Fabio D'Urso <fabiodurso@hotmail.it> 0.4-1
 - Make it work with newer kernels.
 

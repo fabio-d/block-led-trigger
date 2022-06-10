@@ -20,7 +20,7 @@ This repository contains a Linux kernel module that implements a
 ```
 
 ## Usage
-This module has been tested on *Fedora 34 x86_64*, kernel version _5.13.6_.
+This module has been tested on *Fedora 36 x86_64*, kernel version _5.17.13_.
 
 Compile the kernel module (with a simple in-source `make`) **as root**, then
 load it with:
@@ -90,7 +90,7 @@ The RPM package can be installed and started as follows:
 
 ```
 # ./make-rpm.sh
-# dnf install block-led-trigger-0.4-1.fc34.noarch.rpm
+# dnf install block-led-trigger-0.5-1.fc36.noarch.rpm
 # systemctl start block-led-trigger
 ```
 
